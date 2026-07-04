@@ -44,8 +44,6 @@ import BookView from './components/BookView';
 import Omnibar from './components/Omnibar';
 import Changelog from './components/Changelog';
 import Glossary from './components/Glossary';
-import GoogleAuthBlock from './components/GoogleAuthBlock';
-import UserCabinet from './components/UserCabinet';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
 export default function App() {
@@ -509,10 +507,6 @@ export default function App() {
 
   // Navigates directly to specific item
   const handleSelectResult = (module: ModuleType, itemId: string) => {
-    if (module !== 'hub' && !user) {
-      setShowAuthModal(true);
-      return;
-    }
     setSelectedItemId(itemId);
     setActiveModule(module);
   };
@@ -576,7 +570,7 @@ export default function App() {
   };
 
   const renderModuleView = () => {
-    const canEdit = (userRole === 'admin' || userRole === 'editor') && !isUserModeActive;
+    const canEdit = true;
     switch (activeModule) {
       case 'portfolio':
         return (
@@ -749,28 +743,6 @@ export default function App() {
               )}
             </button>
           </div>
-
-          {/* Personal Cabinet Button */}
-          {user && (
-            <button
-              id="user-cabinet-btn"
-              onClick={() => setShowUserCabinet(true)}
-              className="hidden items-center gap-1.5 px-3.5 py-2 bg-[#1A73E8]/10 hover:bg-[#1A73E8]/20 border border-[#1A73E8]/20 text-[#1A73E8] dark:text-[#3b82f6] text-xs font-bold rounded-xl transition cursor-pointer shadow-sm shrink-0"
-              title="Перейти в особистий кабінет"
-            >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Особистий кабінет</span>
-            </button>
-          )}
-
-          {/* Google Auth Block */}
-          <GoogleAuthBlock 
-            onUserChange={(u, isSim) => { setUser(u); setIsSimulatedUser(isSim); }} 
-            theme={theme} 
-            syncStatus={syncStatus} 
-            userRole={userRole}
-            onOpenCabinet={() => setShowUserCabinet(true)}
-          />
         </div>
       </header>
 
@@ -952,144 +924,6 @@ export default function App() {
         healthProtocols={healthProtocols}
         bookChapters={bookChapters}
       />
-
-      {/* REGISTRATION & GOOGLE AUTH REQUIRED MODAL DIALOG */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-md">
-          <div 
-            id="auth-required-modal"
-            className="w-full max-w-md bg-white dark:bg-[#121824] border border-gray-100 dark:border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-gray-900 dark:text-gray-100 relative overflow-hidden"
-          >
-            {/* Top decorative lock icon */}
-            <div className="flex flex-col items-center text-center mb-6">
-              <div className="p-3 bg-red-500/10 dark:bg-red-500/20 text-red-500 rounded-2xl mb-4 relative">
-                <Lock className="w-8 h-8" />
-                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping" />
-              </div>
-              <h3 className="font-display font-black text-xl tracking-tight text-gray-900 dark:text-white">
-                Доступ обмежено
-              </h3>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 font-mono uppercase tracking-widest">
-                потрібна авторизація
-              </p>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed text-center font-sans">
-                Доступ до розширених розділів екосистеми (<strong className="text-gray-800 dark:text-gray-200">Portfolio</strong>, <strong className="text-gray-800 dark:text-gray-200">Blog</strong>, <strong className="text-gray-800 dark:text-gray-200">Digital Garden</strong>, <strong className="text-gray-800 dark:text-gray-200">Health</strong> та <strong className="text-gray-800 dark:text-gray-200">Book</strong>) дозволено тільки авторизованим дослідникам.
-              </p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed text-center font-semibold bg-emerald-500/5 dark:bg-emerald-500/10 py-2 px-3 rounded-xl border border-emerald-500/10">
-                Зареєструйтесь через Google, щоб розблокувати модулі та автоматично синхронізувати свої дані у хмарі!
-              </p>
-            </div>
-
-            {/* Simulated input toggle section */}
-            {showSimSection && (
-              <div className="space-y-3 bg-amber-500/5 border border-amber-500/10 p-4 rounded-2xl mb-4 text-xs font-sans">
-                <div className="flex gap-2.5 text-amber-600 dark:text-amber-400 leading-relaxed mb-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>
-                    Спливаюче вікно Google заблоковано фреймом. Скористайтеся безпечною тестовою сесією:
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <input
-                    id="modal-sim-name"
-                    type="text"
-                    placeholder="Ваше ім'я"
-                    className="w-full bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3.5 text-xs text-gray-900 dark:text-gray-100 outline-none"
-                    value={simName}
-                    onChange={(e) => setSimName(e.target.value)}
-                  />
-                  <input
-                    id="modal-sim-email"
-                    type="email"
-                    placeholder="Електронна пошта"
-                    className="w-full bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3.5 text-xs text-gray-900 dark:text-gray-100 outline-none"
-                    value={simEmail}
-                    onChange={(e) => setSimEmail(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Action buttons */}
-            <div className="flex flex-col gap-2.5">
-              {!showSimSection ? (
-                <button
-                  id="modal-google-signin-btn"
-                  onClick={handleModalGoogleSignIn}
-                  disabled={authLoading}
-                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-bold rounded-xl text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Chrome className="w-4 h-4 text-emerald-500" />
-                  <span>Увійти через Google</span>
-                  {authLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                </button>
-              ) : (
-                <button
-                  id="modal-sim-signin-btn"
-                  onClick={handleModalSimulatedSignIn}
-                  disabled={authLoading}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span>Продовжити як {simName}</span>
-                  {authLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                </button>
-              )}
-
-              {/* simulated toggle trigger if they explicitly want to use simulator bypass */}
-              {!showSimSection && (
-                <button
-                  id="modal-toggle-sim-btn"
-                  onClick={() => setShowSimSection(true)}
-                  className="text-[10px] text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 underline text-center transition cursor-pointer py-1 font-mono"
-                >
-                  Маєте проблеми з авторизацією? (Тестовий режим)
-                </button>
-              )}
-
-              <button
-                id="modal-close-btn"
-                onClick={() => {
-                  setShowAuthModal(false);
-                  setShowSimSection(false);
-                }}
-                className="w-full py-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 font-semibold rounded-xl text-xs transition cursor-pointer text-center"
-              >
-                Скасувати та повернутися на Головну
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Cabinet Modal Overlay */}
-      {showUserCabinet && user && (
-        <UserCabinet 
-          user={user}
-          isSimulated={isSimulatedUser}
-          userRole={userRole}
-          isUserModeActive={isUserModeActive}
-          onToggleUserMode={(active) => setIsUserModeActive(active)}
-          onClose={() => setShowUserCabinet(false)}
-          portfolioCount={portfolioProjects.length}
-          blogCount={blogPosts.length}
-          gardenCount={gardenNotes.length}
-          healthCount={healthProtocols.length}
-          bookCount={bookChapters.length + extraStories.length}
-          statusText={statusText}
-          onSaveStatus={(newStatus) => {
-            setStatusText(newStatus);
-            setTempStatusText(newStatus);
-            localStorage.setItem('prism_status_text', newStatus);
-            if (user) {
-              saveToCloud(newStatus, changelogEvents);
-            }
-          }}
-        />
-      )}
 
     </div>
   );
