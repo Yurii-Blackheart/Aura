@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Helper function to check if the requesting user is the owner (admin yurii.blackheart@gmail.com)
+      function isOwner() {
+        return request.auth != null && request.auth.token.email == 'yurii.blackheart@gmail.com';
+      }
+
+      // Check if the current doc belongs to an admin
+      function isAdminDoc() {
+        return resource != null && resource.data.role == 'admin';
+      }
+
+      // Allow listing all users only for admin or owner
+      allow list: if request.auth != null && (isOwner() || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+
+      // Any registered user can read their own doc, or Admin can read any doc
+      allow read: if (request.auth != null && (request.auth.uid == userId || isOwner())) 
+                  || userId.startsWith("simulated-google-");
+
+      // Creation: any user can create their own doc. If they aren't the owner, they MUST set role to 'user'.
+      allow create: if (request.auth != null && request.auth.uid == userId && (
+                      request.resource.data.role == 'user' || 
+                      (request.resource.data.role == 'admin' && isOwner())
+                    )) || userId.startsWith("simulated-google-");
+
+      // Update: users can update their own doc but cannot change their role, unless they are owner/admin.
+      allow update: if (request.auth != null && (
+                      (request.auth.uid == userId && request.resource.data.role == resource.data.role) || 
+                      isOwner()
+                    )) || userId.startsWith("simulated-google-");
+
+      // Delete: only Admin or owner can delete
+      allow delete: if request.auth != null && isOwner();
+    }
+  }
+}

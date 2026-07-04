@@ -1,0 +1,6 @@
+{
+  "name": "Aura",
+  "description": "Візуальне втілення концепції Aura, де ядро особистості розкладається на гармонійний спектр інтересів: Portfolio, Blog, Garden, Health та Book.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

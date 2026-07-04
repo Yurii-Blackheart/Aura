@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "ChangelogEvent": {
+      "title": "ChangelogEvent",
+      "description": "An event indicating an update, achievement, or publication in the prismhub ecosystem",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "module": { "type": "string" },
+        "type": { "type": "string" },
+        "targetId": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "timestamp", "module", "type"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile with their status and custom events",
+      "type": "object",
+      "properties": {
+        "statusText": { "type": "string" },
+        "changelogEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChangelogEvent"
+          }
+        },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["admin", "editor", "user"] }
+      },
+      "required": ["email", "displayName", "updatedAt", "role"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Isolated user profile document"
+    }
+  }
+}
