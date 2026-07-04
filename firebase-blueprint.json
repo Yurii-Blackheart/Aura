@@ -33,12 +33,40 @@
         "role": { "type": "string", "enum": ["admin", "editor", "user"] }
       },
       "required": ["email", "displayName", "updatedAt", "role"]
+    },
+    "BookLoreEntity": {
+      "title": "BookLoreEntity",
+      "description": "Lore entity representing a character, location, event, faction, creature, magic, glossary, artifact, codex, or chapter in a book",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "book_id": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "summary": { "type": "string" },
+        "body": { "type": "string" },
+        "image": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "links": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "status": { "type": "string", "enum": ["draft", "published", "hidden"] }
+      },
+      "required": ["id", "book_id", "title", "type", "summary", "body", "tags", "links", "status"]
     }
   },
   "firestore": {
     "users/{userId}": {
       "schema": "User",
       "description": "Isolated user profile document"
+    },
+    "book_lore/{loreId}": {
+      "schema": "BookLoreEntity",
+      "description": "Lore entities associated with books, structured dynamically"
     }
   }
 }

@@ -1,19 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      // Helper function to check if the requesting user is the owner (admin yurii.blackheart@gmail.com)
-      function isOwner() {
-        return request.auth != null && request.auth.token.email == 'yurii.blackheart@gmail.com';
-      }
+    
+    // Global Safety Net (First block defined)
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
+    // Global Helpers
+    function isOwner() {
+      return request.auth != null && request.auth.token.email == 'yurii.blackheart@gmail.com';
+    }
+
+    function getUserRole() {
+      return (request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid)))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : 'user';
+    }
+
+    function isAdminOrEditor() {
+      return isOwner() || getUserRole() == 'admin' || getUserRole() == 'editor';
+    }
+
+    function isValidBookLoreEntity(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.book_id is string && data.book_id.size() <= 64
+        && data.title is string && data.title.size() <= 256
+        && data.type is string && data.type.size() <= 64
+        && data.summary is string && data.summary.size() <= 500
+        && data.body is string && data.body.size() <= 50000
+        && (!data.keys().contains('image') || data.image is string)
+        && data.tags is list && data.tags.size() <= 20
+        && data.links is list && data.links.size() <= 50
+        && (data.status == 'draft' || data.status == 'published' || data.status == 'hidden');
+    }
+
+    // Users Collection rules
+    match /users/{userId} {
       // Check if the current doc belongs to an admin
       function isAdminDoc() {
         return resource != null && resource.data.role == 'admin';
       }
 
       // Allow listing all users only for admin or owner
-      allow list: if request.auth != null && (isOwner() || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+      allow list: if request.auth != null && (isOwner() || getUserRole() == 'admin');
 
       // Any registered user can read their own doc, or Admin can read any doc
       allow read: if (request.auth != null && (request.auth.uid == userId || isOwner())) 
@@ -33,6 +63,20 @@ service cloud.firestore {
 
       // Delete: only Admin or owner can delete
       allow delete: if request.auth != null && isOwner();
+    }
+
+    // Book Lore Collection rules
+    match /book_lore/{loreId} {
+      function isValidId(id) {
+        return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      }
+
+      allow read: if isValidId(loreId) && (
+        resource.data.status == 'published' ||
+        isAdminOrEditor()
+      );
+
+      allow write: if isValidId(loreId) && isAdminOrEditor() && isValidBookLoreEntity(request.resource.data);
     }
   }
 }

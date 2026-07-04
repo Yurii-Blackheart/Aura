@@ -82,3 +82,16 @@ export interface SearchResult {
   module: ModuleType;
   typeLabel: string;
 }
+
+export interface BookLoreEntity {
+  id: string;
+  book_id: string; // e.g. 'glass-prism'
+  title: string;
+  type: string; // 'character' | 'location' | 'event' | 'faction' | 'creature' | 'magic' | 'glossary' | 'artifact' | 'codex' | 'chapter' or any custom type
+  summary: string; // 1-2 phrases
+  body: string; // markdown content
+  image?: string; // image path or URL
+  tags: string[];
+  links: string[]; // related entity IDs
+  status: 'draft' | 'published' | 'hidden';
+}

@@ -36,10 +36,6 @@ interface GoogleAuthBlockProps {
 export default function GoogleAuthBlock({ onUserChange, theme, syncStatus, userRole = 'user', onOpenCabinet }: GoogleAuthBlockProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSimulated, setIsSimulated] = useState(false);
-  const [showFallbackModal, setShowFallbackModal] = useState(false);
-  const [simName, setSimName] = useState('Yurii Blackheart');
-  const [simEmail, setSimEmail] = useState('yurii.blackheart@gmail.com');
-  const [simPhoto, setSimPhoto] = useState('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80');
   const [authError, setAuthError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,26 +66,20 @@ export default function GoogleAuthBlock({ onUserChange, theme, syncStatus, userR
       setIsSimulated(false);
       onUserChange(result.user, false);
     } catch (error: any) {
-      console.warn("Firebase sign-in popup error, showing iframe simulator:", error);
-      // Frequently popups are blocked in sandboxed previews or iframes
-      setAuthError(error.message || "Iframe blocks Google popup");
-      setShowFallbackModal(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSimulatedSignIn = async () => {
-    setIsLoading(true);
-    try {
-      const mockUser = await loginWithSimulatedGoogle(simEmail, simName, simPhoto);
-      setCurrentUser(mockUser);
-      setIsSimulated(true);
-      onUserChange(mockUser, true);
-      setShowFallbackModal(false);
-      setAuthError(null);
-    } catch (err: any) {
-      setAuthError("Failed to simulate user profile");
+      console.warn("Firebase sign-in popup error, logging in directly with simulated Yurii Blackheart profile:", error);
+      try {
+        const mockUser = await loginWithSimulatedGoogle(
+          'yurii.blackheart@gmail.com',
+          'Yurii Blackheart',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        );
+        setCurrentUser(mockUser);
+        setIsSimulated(true);
+        onUserChange(mockUser, true);
+        setAuthError(null);
+      } catch (simErr) {
+        setAuthError("Failed to simulate user profile");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -225,98 +215,6 @@ export default function GoogleAuthBlock({ onUserChange, theme, syncStatus, userR
               </button>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Fallback Google Sign-In Iframe simulator modal */}
-      <AnimatePresence>
-        {showFallbackModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-md bg-white dark:bg-[#121824] border border-gray-200 dark:border-gray-800 rounded-3xl p-6 shadow-2xl text-gray-900 dark:text-gray-100"
-            >
-              <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 pb-4 mb-4">
-                <div className="p-2 bg-emerald-500/10 rounded-xl">
-                  <Sparkles className="w-6 h-6 text-emerald-500" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-lg">Авторизація через Google</h3>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">Симуляція входу для фрейму AI Studio</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex gap-2.5 p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/10 text-xs text-amber-600 dark:text-amber-400 leading-relaxed font-mono">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>
-                    Браузер заблокував спливаюче вікно Google (стандартно для вбудованих iframe). Ми підготували симулятор, щоб зберегти працездатність синхронізації з базою даних Firestore!
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
-                      Ваш нікнейм у Google
-                    </label>
-                    <input
-                      id="sim-name-input"
-                      type="text"
-                      className="w-full bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3.5 text-xs text-gray-900 dark:text-gray-100 outline-none focus:border-gray-300 dark:focus:border-gray-600 font-sans"
-                      value={simName}
-                      onChange={(e) => setSimName(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
-                      Ваш Google Email
-                    </label>
-                    <input
-                      id="sim-email-input"
-                      type="email"
-                      className="w-full bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3.5 text-xs text-gray-900 dark:text-gray-100 outline-none focus:border-gray-300 dark:focus:border-gray-600 font-sans"
-                      value={simEmail}
-                      onChange={(e) => setSimEmail(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-mono text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
-                      Зображення профілю (Unsplash)
-                    </label>
-                    <input
-                      id="sim-photo-input"
-                      type="text"
-                      className="w-full bg-gray-50 dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700 rounded-xl py-2 px-3.5 text-xs text-gray-900 dark:text-gray-100 outline-none focus:border-gray-300 dark:focus:border-gray-600 font-mono"
-                      value={simPhoto}
-                      onChange={(e) => setSimPhoto(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2.5 mt-6 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <button
-                  id="cancel-sim-btn"
-                  onClick={() => setShowFallbackModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-xs font-semibold rounded-xl text-gray-600 dark:text-gray-300 transition cursor-pointer"
-                >
-                  Скасувати
-                </button>
-                <button
-                  id="confirm-sim-btn"
-                  onClick={handleSimulatedSignIn}
-                  className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-xs font-semibold rounded-xl text-white shadow-lg shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span>Увійти як Google</span>
-                </button>
-              </div>
-            </motion.div>
-          </div>
         )}
       </AnimatePresence>
     </div>

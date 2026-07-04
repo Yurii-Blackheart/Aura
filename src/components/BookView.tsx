@@ -750,7 +750,7 @@ export default function BookView({
             {/* LORE GRAPH VIEW */}
             {activeTab === 'lore-graph' && (
               <div className="w-full bg-white dark:bg-[#121824] border border-purple-100/50 dark:border-purple-900/20 rounded-3xl p-4 sm:p-6 shadow-sm">
-                <BookLoreGraph />
+                <BookLoreGraph canEdit={canEdit} />
               </div>
             )}
 
